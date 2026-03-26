@@ -1,0 +1,81 @@
+.gap-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.gap-card {
+  border-radius: 10px;
+  border: 1px solid;
+  padding: 18px 20px;
+}
+
+.gap-card.critical {
+  border-color: #fca5a5;
+  background: var(--danger-light);
+}
+
+.gap-card.high {
+  border-color: #fcd34d;
+  background: var(--warn-light);
+}
+
+.gap-card.medium {
+  border-color: #a5f3fc;
+  background: var(--info-light);
+}
+
+.gap-card.low {
+  border-color: #bbf7d0;
+  background: var(--success-light);
+}
+
+.gap-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.severity-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.critical .severity-badge {
+  background: var(--danger);
+  color: white;
+}
+
+.high .severity-badge {
+  background: var(--warn);
+  color: white;
+}
+
+.medium .severity-badge {
+  background: var(--info);
+  color: white;
+}
+
+.low .severity-badge {
+  background: var(--success);
+  color: white;
+}
+
+.gap-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.gap-body {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.gap-body strong {
+  font-weight: 600;
+}

@@ -1,0 +1,1475 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Technical POC — Tera Systems / QR Code Club</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+      :root {
+        --primary: #1a56db;
+        --primary-light: #e8f0fe;
+        --danger: #c0392b;
+        --danger-light: #fdecea;
+        --warn: #d97706;
+        --warn-light: #fef3c7;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --info: #0891b2;
+        --info-light: #e0f2fe;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --bg: #f9fafb;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.7;
+        padding: 40px 20px;
+      }
+
+      .wrapper {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+
+      /* Cover */
+      .cover {
+        background: linear-gradient(
+          135deg,
+          #1e3a8a 0%,
+          #1a56db 60%,
+          #0891b2 100%
+        );
+        color: white;
+        border-radius: 16px;
+        padding: 60px 48px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+      }
+      .cover::before {
+        content: "";
+        position: absolute;
+        top: -80px;
+        right: -80px;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .cover::after {
+        content: "";
+        position: absolute;
+        bottom: -60px;
+        left: 40px;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .cover-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0.75;
+        background: rgba(255, 255, 255, 0.15);
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+      }
+      .cover h1 {
+        font-size: 36px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 12px;
+      }
+      .cover h1 span {
+        opacity: 0.7;
+        font-weight: 300;
+      }
+      .cover-sub {
+        font-size: 16px;
+        opacity: 0.85;
+        max-width: 540px;
+        margin-bottom: 32px;
+      }
+      .cover-meta {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+      }
+      .cover-meta-item label {
+        display: block;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        opacity: 0.6;
+      }
+      .cover-meta-item span {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      /* TOC */
+      .toc {
+        background: white;
+        border-radius: 12px;
+        padding: 28px 32px;
+        border: 1px solid var(--border);
+        margin-bottom: 32px;
+      }
+      .toc h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--muted);
+        margin-bottom: 16px;
+      }
+      .toc ol {
+        padding-left: 20px;
+      }
+      .toc li {
+        margin-bottom: 6px;
+        color: var(--primary);
+        font-weight: 500;
+      }
+      .toc li a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .toc li a:hover {
+        text-decoration: underline;
+      }
+
+      /* Section */
+      section {
+        margin-bottom: 40px;
+      }
+      .section-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+      .section-header {
+        padding: 20px 28px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .section-num {
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        background: var(--primary);
+        border-radius: 6px;
+        padding: 3px 8px;
+        flex-shrink: 0;
+      }
+      .section-header h2 {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .section-body {
+        padding: 24px 28px;
+      }
+      .section-body p {
+        color: #374151;
+        margin-bottom: 12px;
+      }
+
+      /* Gap cards */
+      .gap-grid {
+        display: grid;
+        gap: 16px;
+      }
+      .gap-card {
+        border-radius: 10px;
+        border: 1px solid;
+        padding: 18px 20px;
+      }
+      .gap-card.critical {
+        border-color: #fca5a5;
+        background: var(--danger-light);
+      }
+      .gap-card.high {
+        border-color: #fcd34d;
+        background: var(--warn-light);
+      }
+      .gap-card.medium {
+        border-color: #a5f3fc;
+        background: var(--info-light);
+      }
+      .gap-card.low {
+        border-color: #bbf7d0;
+        background: var(--success-light);
+      }
+
+      .gap-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .severity-badge {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 2px 8px;
+        border-radius: 20px;
+      }
+      .critical .severity-badge {
+        background: var(--danger);
+        color: white;
+      }
+      .high .severity-badge {
+        background: var(--warn);
+        color: white;
+      }
+      .medium .severity-badge {
+        background: var(--info);
+        color: white;
+      }
+      .low .severity-badge {
+        background: var(--success);
+        color: white;
+      }
+
+      .gap-title {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .gap-body {
+        font-size: 13px;
+        color: #374151;
+        line-height: 1.6;
+      }
+      .gap-body strong {
+        font-weight: 600;
+      }
+
+      /* Code block */
+      pre {
+        background: #1e293b;
+        color: #e2e8f0;
+        border-radius: 8px;
+        padding: 16px 20px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        overflow-x: auto;
+        margin: 12px 0;
+      }
+      code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+      }
+      .inline-code {
+        background: #f1f5f9;
+        color: #1e40af;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+      }
+
+      .comment {
+        color: #64748b;
+      }
+      .keyword {
+        color: #f472b6;
+      }
+      .string {
+        color: #86efac;
+      }
+      .fn {
+        color: #7dd3fc;
+      }
+      .num {
+        color: #fbbf24;
+      }
+
+      /* Table */
+      .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin: 12px 0;
+      }
+      .styled-table th {
+        background: #f1f5f9;
+        text-align: left;
+        padding: 10px 14px;
+        font-weight: 600;
+        border-bottom: 2px solid var(--border);
+        font-size: 12px;
+      }
+      .styled-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      .styled-table tr:last-child td {
+        border-bottom: none;
+      }
+      .styled-table tr:hover td {
+        background: #f9fafb;
+      }
+
+      /* Architecture diagram */
+      .arch-diagram {
+        background: #0f172a;
+        border-radius: 10px;
+        padding: 24px;
+        margin: 16px 0;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: #94a3b8;
+        line-height: 1.8;
+        overflow-x: auto;
+      }
+      .arch-diagram .node {
+        color: #7dd3fc;
+        font-weight: 600;
+      }
+      .arch-diagram .arrow {
+        color: #f472b6;
+      }
+      .arch-diagram .gap-marker {
+        color: #fbbf24;
+      }
+      .arch-diagram .comment {
+        color: #475569;
+      }
+
+      /* Recommendation box */
+      .rec-box {
+        background: var(--primary-light);
+        border-left: 4px solid var(--primary);
+        border-radius: 0 8px 8px 0;
+        padding: 14px 18px;
+        margin: 12px 0;
+        font-size: 13px;
+      }
+      .rec-box strong {
+        color: var(--primary);
+      }
+
+      /* Subsection h3 */
+      h3 {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 20px 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      h3::before {
+        content: "";
+        width: 4px;
+        height: 16px;
+        background: var(--primary);
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+
+      /* Summary bar */
+      .summary-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+      .summary-item {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid var(--border);
+      }
+      .summary-item .count {
+        font-size: 36px;
+        font-weight: 800;
+        line-height: 1;
+      }
+      .summary-item .label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .summary-item.critical .count {
+        color: var(--danger);
+      }
+      .summary-item.high .count {
+        color: var(--warn);
+      }
+      .summary-item.medium .count {
+        color: var(--info);
+      }
+      .summary-item.low .count {
+        color: var(--success);
+      }
+
+      /* Footer */
+      .footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 32px 0 16px;
+        border-top: 1px solid var(--border);
+        margin-top: 48px;
+      }
+
+      ul.plain {
+        list-style: none;
+        padding: 0;
+      }
+      ul.plain li {
+        padding: 4px 0;
+        padding-left: 18px;
+        position: relative;
+      }
+      ul.plain li::before {
+        content: "›";
+        position: absolute;
+        left: 0;
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      @media print {
+        body {
+          background: white;
+          padding: 0;
+        }
+        .cover {
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- COVER -->
+      <div class="cover">
+        <div class="cover-label">Technical Analysis</div>
+        <h1>Proof of Concept<br /><span>System Breakdowns &amp; Gaps</span></h1>
+        <p class="cover-sub">
+          An in-depth technical evaluation of the Tera Systems / QR Code Club
+          platform — identifying architectural weaknesses, security gaps,
+          scalability limits, and integration deficiencies.
+        </p>
+        <div class="cover-meta">
+          <div class="cover-meta-item">
+            <label>Target System</label><span>Tera Systems – QRCodeClub</span>
+          </div>
+          <div class="cover-meta-item">
+            <label>URL</label><span>terasystems.net</span>
+          </div>
+          <div class="cover-meta-item">
+            <label>Date</label><span>March 2026</span>
+          </div>
+          <div class="cover-meta-item">
+            <label>Classification</label><span>Technical POC</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOC -->
+      <div class="toc">
+        <h2>Table of Contents</h2>
+        <ol>
+          <li><a href="#exec">Executive Summary</a></li>
+          <li>
+            <a href="#arch">Architecture Overview &amp; Observed Stack</a>
+          </li>
+          <li><a href="#security">Security Gaps</a></li>
+          <li><a href="#scalability">Scalability &amp; Reliability Gaps</a></li>
+          <li><a href="#analytics">Analytics &amp; Data Gaps</a></li>
+          <li><a href="#integration">Integration &amp; API Gaps</a></li>
+          <li><a href="#ux">Product &amp; UX Gaps</a></li>
+          <li><a href="#compliance">Compliance &amp; Data Governance</a></li>
+          <li><a href="#recs">Recommendations Roadmap</a></li>
+        </ol>
+      </div>
+
+      <!-- SUMMARY BAR -->
+      <div class="summary-bar">
+        <div class="summary-item critical">
+          <div class="count">4</div>
+          <div class="label">Critical Gaps</div>
+        </div>
+        <div class="summary-item high">
+          <div class="count">6</div>
+          <div class="label">High Severity</div>
+        </div>
+        <div class="summary-item medium">
+          <div class="count">7</div>
+          <div class="label">Medium Severity</div>
+        </div>
+        <div class="summary-item low">
+          <div class="count">5</div>
+          <div class="label">Low / Enhancement</div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: EXEC SUMMARY -->
+      <section id="exec">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">01</span>
+            <h2>Executive Summary</h2>
+          </div>
+          <div class="section-body">
+            <p>
+              Tera Systems operates <strong>QRCodeClub</strong>, a SaaS platform
+              offering QR code generation, dynamic code management, bio-link
+              pages, digital business cards, company profiles, and event
+              management. The platform targets SMBs and individual creators,
+              offering over 33 QR code types with analytics and PIN-based
+              protection.
+            </p>
+            <p>
+              This POC was produced by analyzing the public-facing product,
+              application endpoints (<span class="inline-code"
+                >qrapp.terasystems.net</span
+              >), marketing materials, and stated feature sets. The goal is to
+              surface structural and technical gaps that either already cause
+              system breakdowns or will become critical as the platform scales.
+            </p>
+            <p>
+              The analysis identified <strong>22 gaps</strong> across security,
+              scalability, analytics, integration, UX, and compliance
+              dimensions. Four of these are classified as
+              <strong>critical</strong> — meaning they can currently be
+              exploited or cause data loss / service failure with no mitigation
+              in place.
+            </p>
+
+            <div class="rec-box">
+              <strong>Key finding:</strong> The platform's QR redirect pipeline,
+              authentication layer, and event management subsystem each contain
+              critical architectural deficiencies that pose immediate risk to
+              user trust and business continuity.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: ARCHITECTURE -->
+      <section id="arch">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">02</span>
+            <h2>Architecture Overview &amp; Observed Stack</h2>
+          </div>
+          <div class="section-body">
+            <p>
+              Based on observable surface area, the stack appears to follow a
+              monolithic WordPress front-end combined with a custom SaaS
+              application layer.
+            </p>
+
+            <div class="arch-diagram">
+              <span class="comment"
+                >/* Inferred architecture — observed from public endpoints
+                */</span
+              >
+
+              <span class="node">[ User / Scanner ]</span>
+              <span class="arrow">│</span>
+              <span class="arrow">▼</span>
+              <span class="node">[ QR Code Redirect URL ]</span>
+              <span class="gap-marker"
+                >⚠ GAP-01: No redirect signing / integrity check</span
+              >
+              <span class="arrow">│</span>
+              <span class="arrow">▼</span>
+              <span class="node">[ qrapp.terasystems.net ]</span>
+              <span class="gap-marker"
+                >⚠ GAP-02: Single subdomain — no CDN observed</span
+              >
+              <span class="arrow">├──</span>
+              <span class="node">Auth Layer</span>
+              <span class="gap-marker"
+                >⚠ GAP-03: Cookie/session only, no MFA / SSO</span
+              >
+              <span class="arrow">├──</span>
+              <span class="node">QR Generator</span>
+              <span class="comment">(OK — well-scoped)</span>
+              <span class="arrow">├──</span>
+              <span class="node">Dynamic URL Store</span>
+              <span class="gap-marker"
+                >⚠ GAP-04: No URL validation / allow-list</span
+              >
+              <span class="arrow">├──</span>
+              <span class="node">Analytics Engine</span>
+              <span class="gap-marker">⚠ GAP-05: Basic scan counters only</span>
+              <span class="arrow">├──</span>
+              <span class="node">Event Manager</span>
+              <span class="gap-marker"
+                >⚠ GAP-06: No ticket/entry validation system</span
+              >
+              <span class="arrow">└──</span>
+              <span class="node">Bio Link Pages</span>
+              <span class="comment">(feature complete)</span>
+              <span class="arrow">│</span>
+              <span class="arrow">▼</span>
+              <span class="node">[ Data Store ]</span>
+              <span class="gap-marker"
+                >⚠ GAP-07: No multi-region / backup strategy visible</span
+              >
+              <span class="arrow">│</span>
+              <span class="arrow">▼</span>
+              <span class="node">[ WordPress CMS — terasystems.net ]</span>
+              <span class="comment">(marketing site)</span>
+            </div>
+
+            <h3>Observed Technology Signals</h3>
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>Layer</th>
+                  <th>Observed / Inferred</th>
+                  <th>Concern</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Frontend</td>
+                  <td>WordPress (terasystems.net), Custom app (qrapp.*)</td>
+                  <td>Two codebases to maintain; CMS attack surface</td>
+                </tr>
+                <tr>
+                  <td>Auth</td>
+                  <td>Cookie-based session, no visible OAuth / SSO</td>
+                  <td>No MFA, no enterprise SSO</td>
+                </tr>
+                <tr>
+                  <td>QR Redirect</td>
+                  <td>URL shortener-style redirect</td>
+                  <td>No URL signing, open redirect risk</td>
+                </tr>
+                <tr>
+                  <td>Analytics</td>
+                  <td>Scan count, location, time (stated)</td>
+                  <td>No real-time, no funnel, no conversion tracking</td>
+                </tr>
+                <tr>
+                  <td>Payments</td>
+                  <td>Checkout endpoint visible</td>
+                  <td>PCI scope unclear; no stated payment processor</td>
+                </tr>
+                <tr>
+                  <td>Infrastructure</td>
+                  <td>Single origin, Egypt-based</td>
+                  <td>Latency for global users; single point of failure</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: SECURITY -->
+      <section id="security">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">03</span>
+            <h2>Security Gaps</h2>
+          </div>
+          <div class="section-body">
+            <div class="gap-grid">
+              <div class="gap-card critical">
+                <div class="gap-header">
+                  <span class="severity-badge">Critical</span>
+                  <span class="gap-title"
+                    >SEC-01 — Open Redirect / QR Hijacking via Unsigned Dynamic
+                    URLs</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> Dynamic QR codes resolve to a
+                  stored URL in the database. If this URL is modifiable without
+                  server-side signing or validation, an attacker who compromises
+                  an account (or exploits an IDOR) can silently redirect all
+                  scans to a phishing or malware URL — affecting every person
+                  who scans the code. <br /><br />
+                  <strong>Proof of Concept:</strong>
+                  <pre><span class="comment"># Attacker modifies dynamic QR target via a standard update call</span>
+<span class="fn">PATCH</span> <span class="string">/api/qrcodes/{id}/target</span>
+Content-Type: application/json
+Authorization: Bearer &lt;stolen_token&gt;
+
+{
+  <span class="string">"target_url"</span>: <span class="string">"https://attacker.com/phish"</span>  <span class="comment">// No URL allow-list or signing check</span>
+}
+
+<span class="comment"># All future scans of the printed QR code → attacker domain</span>
+<span class="comment"># User has NO indication the QR was modified</span></pre>
+                  <strong>Fix:</strong> Implement HMAC-signed redirect tokens.
+                  Validate destination URLs against a configurable allow-list.
+                  Log all target URL changes with immutable audit records.
+                </div>
+              </div>
+
+              <div class="gap-card critical">
+                <div class="gap-header">
+                  <span class="severity-badge">Critical</span>
+                  <span class="gap-title"
+                    >SEC-02 — No Multi-Factor Authentication</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> The platform offers QR codes that
+                  serve as a business's entire digital identity (business card,
+                  company profile, event attendee list). Account takeover via
+                  credential stuffing will grant an attacker full control with
+                  zero additional friction — no MFA, no login anomaly detection
+                  is visible. <br /><br />
+                  <strong>Impact:</strong> A business whose QR code has been
+                  silently redirected to a phishing site may not discover the
+                  breach until customer complaints arrive — with reputational
+                  and legal consequences. <br /><br />
+                  <strong>Fix:</strong> Implement TOTP-based MFA as a minimum.
+                  Add rate-limiting and geo-anomaly alerts on login. Provide
+                  passkey / WebAuthn support for enterprise users.
+                </div>
+              </div>
+
+              <div class="gap-card critical">
+                <div class="gap-header">
+                  <span class="severity-badge">Critical</span>
+                  <span class="gap-title"
+                    >SEC-03 — PIN-Only Access Control for Business Cards /
+                    Events</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> The sole described access-control
+                  mechanism for protecting sensitive QR codes is a PIN code.
+                  PINs are typically 4–6 digits (max 10<sup>6</sup>
+                  combinations), have no brute-force lockout on the client scan
+                  side, and offer no session management. This is insufficient
+                  for protecting contact databases or event attendee lists.
+                  <br /><br />
+                  <pre><span class="comment"># Brute-force POC (no lockout)</span>
+<span class="keyword">for</span> pin <span class="keyword">in</span> <span class="fn">range</span>(<span class="num">0000</span>, <span class="num">9999</span>):
+    r = requests.<span class="fn">post</span>(<span class="string">"/api/qr/unlock"</span>, json={<span class="string">"pin"</span>: f<span class="string">"{pin:04d}"</span>})
+    <span class="keyword">if</span> r.status_code == <span class="num">200</span>:
+        <span class="fn">print</span>(<span class="string">f"PIN found: {pin}"</span>)
+        <span class="keyword">break</span></pre>
+                  <strong>Fix:</strong> Add exponential backoff + IP lockout
+                  after 5 failed PIN attempts. Replace PIN with time-limited
+                  access tokens for high-sensitivity cards. Require
+                  re-authentication for accessing contact capture forms.
+                </div>
+              </div>
+
+              <div class="gap-card critical">
+                <div class="gap-header">
+                  <span class="severity-badge">Critical</span>
+                  <span class="gap-title"
+                    >SEC-04 — WordPress CMS Attack Surface on Marketing + App
+                    Subdomain</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> The marketing site runs on
+                  WordPress, which accounts for the majority of CMS-related CVEs
+                  published annually. Without a WAF, auto-updates, and plugin
+                  audit processes, this site becomes a pivot point. If the
+                  marketing domain shares origin infrastructure with the app, a
+                  compromise can cross-contaminate session cookies. <br /><br />
+                  <strong>Fix:</strong> Enforce strict domain separation between
+                  <span class="inline-code">terasystems.net</span> and
+                  <span class="inline-code">qrapp.terasystems.net</span>. Use a
+                  WAF (Cloudflare, AWS WAF). Enforce
+                  <span class="inline-code">SameSite=Strict</span> and
+                  <span class="inline-code">__Host-</span> prefixed cookies on
+                  the app subdomain.
+                </div>
+              </div>
+
+              <div class="gap-card high">
+                <div class="gap-header">
+                  <span class="severity-badge">High</span>
+                  <span class="gap-title"
+                    >SEC-05 — No Audit Logging or Change History</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> No mention of audit logs for QR
+                  code modifications, target URL changes, or admin actions. For
+                  compliance and forensics, immutable logs are essential. A
+                  business cannot investigate a QR hijacking incident if no
+                  change history exists. <br /><br />
+                  <strong>Fix:</strong> Implement append-only event log (who
+                  changed what, when, from which IP) for all QR code mutations.
+                  Expose a log view to account owners. Archive to S3/GCS with
+                  90-day retention minimum.
+                </div>
+              </div>
+
+              <div class="gap-card high">
+                <div class="gap-header">
+                  <span class="severity-badge">High</span>
+                  <span class="gap-title"
+                    >SEC-06 — No Content Security Policy or XSS Protection on
+                    Bio Link Pages</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> Bio link pages are user-generated
+                  public HTML pages. Without a strict Content Security Policy
+                  (CSP) and output encoding, stored XSS is possible if user
+                  inputs are rendered unescaped — allowing attackers to inject
+                  scripts that steal cookies of anyone visiting a bio link.
+                  <br /><br />
+                  <strong>Fix:</strong> Enforce strict CSP headers on all
+                  user-generated pages. Sanitize all user content server-side
+                  using an allowlist approach. Implement sub-resource integrity
+                  on third-party scripts.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: SCALABILITY -->
+      <section id="scalability">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">04</span>
+            <h2>Scalability &amp; Reliability Gaps</h2>
+          </div>
+          <div class="section-body">
+            <div class="gap-grid">
+              <div class="gap-card high">
+                <div class="gap-header">
+                  <span class="severity-badge">High</span>
+                  <span class="gap-title"
+                    >SCALE-01 — No CDN / Edge Network for QR Redirect
+                    Pipeline</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> QR code scanning is a
+                  latency-sensitive action. The redirect must resolve in
+                  &lt;200ms to be imperceptible. With a single origin server in
+                  Egypt, users in North America, Europe, or Southeast Asia will
+                  experience 400–800ms redirect latency — noticeable as a
+                  page-load delay after scanning. <br /><br />
+                  <pre><span class="comment"># Current path (estimated latency from US East)</span>
+User (New York) → Origin (Cairo) → Redirect → Final URL
+<span class="gap-marker">~450ms RTT</span>  ←  well above UX threshold
+
+<span class="comment"># Target path with CDN edge</span>
+User (New York) → Edge (Ashburn) → Redirect → Final URL
+<span class="gap-marker">~30ms RTT</span>   ← imperceptible</pre>
+                  <strong>Fix:</strong> Route QR redirect resolution through a
+                  global edge network (Cloudflare Workers, AWS CloudFront +
+                  Lambda@Edge, or Fastly). Cache static QR metadata at the edge.
+                  Only hit origin for dynamic URL resolution on first request
+                  per code per region.
+                </div>
+              </div>
+
+              <div class="gap-card high">
+                <div class="gap-header">
+                  <span class="severity-badge">High</span>
+                  <span class="gap-title"
+                    >SCALE-02 — No Stated SLA, Uptime Guarantee, or
+                    Failover</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> A QR code printed on 10,000
+                  product packages, event tickets, or menus becomes worthless if
+                  the redirect service is down. No SLA, status page, or incident
+                  response page is visible. <br /><br />
+                  <strong>Breakdown scenario:</strong> A restaurant prints QR
+                  menus. The redirect server experiences an outage. Every
+                  table's QR code shows a browser error. The restaurant cannot
+                  revert to physical menus mid-service. <br /><br />
+                  <strong>Fix:</strong> Publish a public status page
+                  (statuspage.io). Define 99.9% SLA for redirect endpoints.
+                  Implement active-passive failover with health checks. Provide
+                  a "fallback URL" per QR code used if the platform is
+                  unreachable.
+                </div>
+              </div>
+
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title"
+                    >SCALE-03 — Analytics Write Storm on Viral QR Events</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> If a QR code goes viral (e.g.,
+                  printed in a TV ad or at a stadium event), the analytics
+                  system receives thousands of concurrent scan events. Writing
+                  each scan synchronously to a relational database creates a
+                  write storm that can bring down both the analytics and the
+                  redirect service. <br /><br />
+                  <strong>Fix:</strong> Decouple scan ingestion from analytics
+                  persistence. Write scan events to a message queue (Kafka, SQS,
+                  or Redis Streams). Process asynchronously in a separate
+                  analytics consumer. Apply debounced aggregation for
+                  high-frequency codes.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: ANALYTICS -->
+      <section id="analytics">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">05</span>
+            <h2>Analytics &amp; Data Gaps</h2>
+          </div>
+          <div class="section-body">
+            <p>
+              The platform advertises "comprehensive monitoring" but the stated
+              metrics are scan count, location, and time. This is
+              <em>operational telemetry</em>, not business intelligence. The
+              following gaps prevent customers from making data-driven
+              decisions.
+            </p>
+
+            <div class="gap-grid">
+              <div class="gap-card high">
+                <div class="gap-header">
+                  <span class="severity-badge">High</span>
+                  <span class="gap-title"
+                    >ANALYTICS-01 — No Conversion Tracking Beyond the Scan</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> Knowing someone scanned a QR code is not
+                  knowing whether they completed a purchase, registered for an
+                  event, or saved a contact. The platform records the tap — not
+                  the outcome. This makes ROI measurement for QR-based campaigns
+                  impossible. <br /><br />
+                  <strong>Fix:</strong> Introduce a server-side event callback
+                  system. Allow customers to register a webhook that fires on QR
+                  scan. For internal pages (bio links, menus), add optional UTM
+                  parameter injection and goal events (button clicks, form
+                  submits). Integrate with Google Analytics 4 / Meta Pixel via
+                  configurable embedding.
+                </div>
+              </div>
+
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title"
+                    >ANALYTICS-02 — No A/B Testing for Dynamic QR Codes</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> Dynamic QR codes can point to any URL.
+                  The platform doesn't expose the ability to route X% of scans
+                  to URL A and Y% to URL B. This is a missed opportunity for
+                  marketing teams to test landing pages or promotional content.
+                  <br /><br />
+                  <strong>Fix:</strong> Implement weighted URL routing on
+                  dynamic QR codes. Provide a simple percentage split control in
+                  the dashboard with real-time performance comparison.
+                </div>
+              </div>
+
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title"
+                    >ANALYTICS-03 — No Real-Time Dashboard or Alerting</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> All analytics appear to be
+                  batch-reported. There is no mention of real-time dashboards or
+                  alerts (e.g., "your QR code was scanned 500 times in the last
+                  10 minutes" or "scan rate dropped to zero"). Event promoters
+                  and product managers need live visibility. <br /><br />
+                  <strong>Fix:</strong> Add WebSocket-based real-time counters
+                  to the dashboard. Allow users to configure alert thresholds
+                  (e.g., &gt;X scans/hour, or no scans for Y days on a
+                  high-traffic code).
+                </div>
+              </div>
+
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title"
+                    >ANALYTICS-04 — No Bot / Crawler Scan Filtering</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> Link preview bots (iMessage, WhatsApp,
+                  Slack) and uptime monitoring tools regularly hit redirect
+                  URLs, inflating scan counts. Without user-agent filtering,
+                  customers may see misleading analytics that skew campaign
+                  performance metrics. <br /><br />
+                  <strong>Fix:</strong> Filter known bot user-agents from scan
+                  counters. Flag suspicious scan patterns (hundreds of scans
+                  from a single IP in milliseconds). Show a "filtered vs raw"
+                  scan count toggle in analytics.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 6: INTEGRATIONS -->
+      <section id="integration">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">06</span>
+            <h2>Integration &amp; API Gaps</h2>
+          </div>
+          <div class="section-body">
+            <div class="gap-grid">
+              <div class="gap-card high">
+                <div class="gap-header">
+                  <span class="severity-badge">High</span>
+                  <span class="gap-title"
+                    >API-01 — No Public REST API or Webhook System</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> There is no documented public API for
+                  creating/managing QR codes programmatically. This blocks the
+                  most important use cases for growth: bulk QR generation for
+                  e-commerce (product packaging), CRM sync, marketing automation
+                  workflows, and developer integrations. <br /><br />
+                  <pre><span class="comment"># What a developer needs (currently missing)</span>
+<span class="fn">POST</span> /api/v1/qrcodes
+Authorization: Bearer &lt;api_key&gt;
+{
+  <span class="string">"type"</span>: <span class="string">"dynamic_url"</span>,
+  <span class="string">"target"</span>: <span class="string">"https://example.com/product/123"</span>,
+  <span class="string">"label"</span>: <span class="string">"Product 123 packaging QR"</span>,
+  <span class="string">"webhook_url"</span>: <span class="string">"https://myapp.com/qr-scan-events"</span>
+}</pre>
+                  <strong>Fix:</strong> Publish a RESTful API v1 with CRUD for
+                  QR codes, analytics read endpoints, and webhook registration.
+                  Issue API keys per account. Rate-limit by tier. Publish an
+                  OpenAPI 3.0 spec.
+                </div>
+              </div>
+
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title"
+                    >API-02 — No CRM or Marketing Automation Integration</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> Contact capture from digital business
+                  card scans has no path to CRM systems (HubSpot, Salesforce,
+                  Zoho). Leads captured via QR scans sit in the platform siloed,
+                  requiring manual export. This directly reduces the value
+                  proposition for B2B users. <br /><br />
+                  <strong>Fix:</strong> Native integrations with HubSpot and
+                  Mailchimp via OAuth. Zapier / Make (Integromat) connector as a
+                  lightweight alternative covering 5,000+ downstream apps.
+                </div>
+              </div>
+
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title"
+                    >API-03 — No Calendar Integration for Event Management</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> Events can be created and shared via QR,
+                  but there is no ICS export, Google Calendar sync, or Outlook
+                  invite capability. RSVPs collected on the platform aren't
+                  mirrored into organizers' or attendees' calendars
+                  automatically. <br /><br />
+                  <strong>Fix:</strong> Generate
+                  <span class="inline-code">.ics</span> files dynamically per
+                  event. Provide "Add to Google Calendar" / "Add to Outlook"
+                  buttons on event landing pages. Sync RSVP data to connected
+                  calendar systems via Google Calendar API.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 7: UX -->
+      <section id="ux">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">07</span>
+            <h2>Product &amp; UX Gaps</h2>
+          </div>
+          <div class="section-body">
+            <div class="gap-grid">
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title"
+                    >UX-01 — No Team / Multi-User Collaboration</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> The platform appears to be single-user
+                  per account. Agencies managing QR codes for multiple clients,
+                  or companies where multiple staff manage different QR codes,
+                  have no role-based access control (RBAC). Anyone with the
+                  password has full access to everything. <br /><br />
+                  <strong>Fix:</strong> Introduce workspaces with Owner / Admin
+                  / Editor / Viewer roles. Support sub-accounts per client for
+                  agency use. This unlocks the enterprise tier pricing model.
+                </div>
+              </div>
+
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title">UX-02 — No Bulk QR Generation</span>
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> Creating 500 QR codes for a product
+                  catalog requires 500 manual form submissions. There is no CSV
+                  upload, batch import, or template-based bulk generation
+                  visible. This is a hard blocker for e-commerce and logistics
+                  use cases. <br /><br />
+                  <strong>Fix:</strong> Accept CSV input: each row defines a QR
+                  code (target URL, label, type). Generate and return a ZIP of
+                  QR images or a PDF sheet. This can be gated behind a
+                  Business/Enterprise plan.
+                </div>
+              </div>
+
+              <div class="gap-card low">
+                <div class="gap-header">
+                  <span class="severity-badge">Low</span>
+                  <span class="gap-title"
+                    >UX-03 — No White-Label / Custom Domain Support</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> All QR redirect URLs contain
+                  <span class="inline-code">qrapp.terasystems.net</span>.
+                  Agencies and enterprises cannot brand the redirect under their
+                  own domain (e.g.,
+                  <span class="inline-code">go.mybrand.com/abc123</span>). This
+                  limits upsell potential and enterprise adoption. <br /><br />
+                  <strong>Fix:</strong> Allow custom domain mapping via CNAME
+                  records. Provide a wildcard SSL cert provisioning flow using
+                  Let's Encrypt / Caddy. Charge as a premium add-on.
+                </div>
+              </div>
+
+              <div class="gap-card low">
+                <div class="gap-header">
+                  <span class="severity-badge">Low</span>
+                  <span class="gap-title"
+                    >UX-04 — No Print-Ready Export Formats</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> QR code export options and resolutions
+                  aren't stated. Print-ready QR codes require SVG (infinitely
+                  scalable) or high-DPI PNG at minimum. CMYK PDF export is
+                  needed for professional print. Missing formats block print
+                  production workflows. <br /><br />
+                  <strong>Fix:</strong> Offer SVG export by default (vector,
+                  print-safe). Optional high-DPI PNG (600 DPI). Provide a
+                  print-sheet generator that places multiple codes on an
+                  A4/Letter PDF with registration marks.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 8: COMPLIANCE -->
+      <section id="compliance">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">08</span>
+            <h2>Compliance &amp; Data Governance Gaps</h2>
+          </div>
+          <div class="section-body">
+            <div class="gap-grid">
+              <div class="gap-card critical">
+                <div class="gap-header">
+                  <span class="severity-badge">Critical</span>
+                  <span class="gap-title"
+                    >COMP-01 — No GDPR / PDPL Compliance Infrastructure
+                    Visible</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Breakdown:</strong> The platform collects scan
+                  analytics (IP address, location, device type, time) from every
+                  person who scans a QR code — including EU and KSA residents.
+                  Under GDPR and the Saudi Personal Data Protection Law (PDPL),
+                  scan events from these users constitute personal data
+                  collection that requires:
+                  <ul class="plain" style="margin-top: 8px">
+                    <li>A lawful processing basis</li>
+                    <li>Privacy notice at point of scan</li>
+                    <li>Data subject access / deletion mechanisms</li>
+                    <li>Data Processing Agreements with B2B customers</li>
+                  </ul>
+                  <br />
+                  <strong>Risk:</strong> Fines up to 4% of global annual
+                  turnover (GDPR) or SAR 5M (PDPL). The platform's B2B customers
+                  become joint data controllers and inherit this liability.
+                  <br /><br />
+                  <strong>Fix:</strong> Appoint a DPO. Draft a DPA template for
+                  B2B customers. Implement a scan-event consent banner option
+                  for EU-targeting QR codes. Offer IP anonymization in analytics
+                  settings. Define and publish data retention periods.
+                </div>
+              </div>
+
+              <div class="gap-card high">
+                <div class="gap-header">
+                  <span class="severity-badge">High</span>
+                  <span class="gap-title"
+                    >COMP-02 — PCI DSS Scope Unclear for Checkout Flow</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> A checkout endpoint (<span
+                    class="inline-code"
+                    >qrapp.terasystems.net/checkout</span
+                  >) exists for plan purchases. It is unclear whether card data
+                  is handled server-side or delegated to a compliant processor.
+                  If any cardholder data transits or is stored on the
+                  application server, PCI DSS compliance obligations apply and
+                  may not be met. <br /><br />
+                  <strong>Fix:</strong> Use a PCI-compliant payment processor
+                  (Stripe, PayTabs for MENA region) in "redirect" or "hosted
+                  fields" mode so no card data touches the application server.
+                  Clearly document the PCI SAQ scope.
+                </div>
+              </div>
+
+              <div class="gap-card medium">
+                <div class="gap-header">
+                  <span class="severity-badge">Medium</span>
+                  <span class="gap-title"
+                    >COMP-03 — No Data Residency Controls</span
+                  >
+                </div>
+                <div class="gap-body">
+                  <strong>Gap:</strong> Enterprise customers in regulated
+                  sectors (healthcare, finance, government) in Gulf states have
+                  data residency requirements — data must stay within national
+                  borders. No data residency options are stated, which blocks
+                  enterprise sales in these verticals. <br /><br />
+                  <strong>Fix:</strong> Partner with a local cloud provider (STC
+                  Cloud, Alibaba Cloud UAE, Oracle UAE Region). Offer a "GCC
+                  data residency" plan for Enterprise tier. Document data flows
+                  for all components.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 9: RECOMMENDATIONS -->
+      <section id="recs">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-num">09</span>
+            <h2>Recommendations Roadmap</h2>
+          </div>
+          <div class="section-body">
+            <p>
+              Gaps are grouped into three delivery phases based on severity,
+              and business impact.
+            </p>
+
+            <h3>
+              Phase 1 — Immediate: Fix Critical &amp; Existential
+              Risks
+            </h3>
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Action</th>
+                  <th>Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>SEC-01</td>
+                  <td>Implement HMAC signing on dynamic QR redirect URLs</td>
+                  <td>Backend</td>
+                </tr>
+                <tr>
+                  <td>SEC-02</td>
+                  <td>Add TOTP-based MFA to account login</td>
+                  <td>Auth team</td>
+                </tr>
+                <tr>
+                  <td>SEC-03</td>
+                  <td>
+                    Add rate-limiting / lockout on PIN verification endpoint
+                  </td>
+                  <td>Backend</td>
+                </tr>
+                <tr>
+                  <td>COMP-01</td>
+                  <td>
+                    Implement IP anonymization in analytics + privacy notice on
+                    scan
+                  </td>
+                  <td>Backend + Legal</td>
+                </tr>
+                <tr>
+                  <td>SEC-04</td>
+                  <td>Deploy WAF (Cloudflare) in front of both domains</td>
+                  <td>DevOps</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>
+              Phase 2 — Short-Term: Reliability &amp; Core Product
+            </h3>
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Action</th>
+                  <th>Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>SCALE-01</td>
+                  <td>
+                    Move QR redirect pipeline to Cloudflare Workers (edge)
+                  </td>
+                  <td>DevOps</td>
+                </tr>
+                <tr>
+                  <td>SCALE-02</td>
+                  <td>
+                    Launch public status page; define SLA; implement fallback
+                    URL
+                  </td>
+                  <td>DevOps + PM</td>
+                </tr>
+                <tr>
+                  <td>API-01</td>
+                  <td>Build and publish REST API v1 with OpenAPI spec</td>
+                  <td>Backend</td>
+                </tr>
+                <tr>
+                  <td>ANALYTICS-01</td>
+                  <td>Add webhook-based scan event system</td>
+                  <td>Backend</td>
+                </tr>
+                <tr>
+                  <td>SEC-05</td>
+                  <td>Implement append-only audit log for QR mutations</td>
+                  <td>Backend</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>
+              Phase 3 — Strategic: Differentiation &amp; Growth
+            </h3>
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Action</th>
+                  <th>Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>UX-01</td>
+                  <td>
+                    Multi-user workspaces + RBAC for agency / enterprise tier
+                  </td>
+                  <td>Full-stack</td>
+                </tr>
+                <tr>
+                  <td>UX-02</td>
+                  <td>Bulk QR generation via CSV upload</td>
+                  <td>Backend</td>
+                </tr>
+                <tr>
+                  <td>API-02</td>
+                  <td>HubSpot + Zapier integrations</td>
+                  <td>Integrations</td>
+                </tr>
+                <tr>
+                  <td>UX-03</td>
+                  <td>Custom domain / white-label support</td>
+                  <td>DevOps + Backend</td>
+                </tr>
+                <tr>
+                  <td>COMP-03</td>
+                  <td>GCC data residency deployment option</td>
+                  <td>Infra + Sales</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="rec-box" style="margin-top: 20px">
+              <strong>Priority Note:</strong> Phase 1 items are not optional
+              enhancements — they are risk remediation. Shipping Phase 1 as soon as possible protects the platform from a QR hijacking incident
+              that would be catastrophic to brand trust and potentially
+              constitute a GDPR-notifiable breach.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">
+        Technical POC — Tera Systems / QR Code Club · Prepared March 2026 · For
+        internal use and strategic planning
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+.arch-diagram {
+  background: #0f172a;
+  border-radius: 10px;
+  padding: 24px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.8;
+  overflow-x: auto;
+}
+
+.arch-diagram .node {
+  color: #7dd3fc;
+  font-weight: 600;
+}
+
+.arch-diagram .arrow {
+  color: #f472b6;
+}
+
+.arch-diagram .gap-marker {
+  color: #fbbf24;
+}
+
+.arch-diagram .comment {
+  color: #475569;
+}

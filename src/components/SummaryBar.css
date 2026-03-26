@@ -1,0 +1,43 @@
+.summary-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.summary-item {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.summary-item .count {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.summary-item .label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.summary-item.critical .count {
+  color: var(--danger);
+}
+
+.summary-item.high .count {
+  color: var(--warn);
+}
+
+.summary-item.medium .count {
+  color: var(--info);
+}
+
+.summary-item.low .count {
+  color: var(--success);
+}

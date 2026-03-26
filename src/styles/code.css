@@ -1,0 +1,45 @@
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.inline-code {
+  background: #f1f5f9;
+  color: #1e40af;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.comment {
+  color: #64748b;
+}
+
+.keyword {
+  color: #f472b6;
+}
+
+.string {
+  color: #86efac;
+}
+
+.fn {
+  color: #7dd3fc;
+}
+
+.num {
+  color: #fbbf24;
+}
